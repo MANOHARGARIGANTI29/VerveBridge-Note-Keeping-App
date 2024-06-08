@@ -1,1 +1,1 @@
-export const  BASE_URL = 'http://localhost:8000';
+export const  BASE_URL = 'https://vervebridge-note-keeping-app-back-end.onrender.com/';
