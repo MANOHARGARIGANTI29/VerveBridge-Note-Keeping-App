@@ -2,6 +2,7 @@
   "name": "notes-app",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://manohargariganti29.github.io/VerveBridge-Note-Keeping-App/",
   "type": "module",
   "scripts": {
     "dev": "vite",
