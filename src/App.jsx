@@ -2,7 +2,7 @@
 import Home from "./Pages/Home/Home";
 import Login from "./Pages/Login";
 import SignUp from "./Pages/SignUp";
-import {BrowserRouter as Router,Routes,Route} from "react-router-dom";
+import {HashRouter as Router,Routes,Route} from "react-router-dom";
 
 const routes = (
     <Router>
