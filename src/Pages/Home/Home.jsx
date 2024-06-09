@@ -1,116 +1,114 @@
-import { MdAdd } from "react-icons/md";
-import Navbar from "../../components/Navbar";
-import NoteCard from "../../components/cards/NoteCard";
-import AddEditNotes from "../Home/AddEditNotes";
-import Modal from "react-modal";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axiosInstance from "../../utils/axiosinstances";
-import Toast from "../../components/TostMessage/Toast";
-import EmptyCard from "../../components/empty-cards/empty-cards";
-import AddnotesImg from "../../assets/images/Untitled design.png";
-import Nonote from "../../assets/images/empty-notes-isolated-vector-17057936.jpg";
+import { MdAdd } from "react-icons/md"; // Icon for adding new note
+import Navbar from "../../components/Navbar"; // Navbar component for navigation
+import NoteCard from "../../components/cards/NoteCard"; // NoteCard component for displaying individual notes
+import AddEditNotes from "../Home/AddEditNotes"; // Component for adding/editing notes
+import Modal from "react-modal"; // Modal component for displaying Add/Edit Note form
+import { useEffect, useState } from "react"; // React hooks for managing component state and side effects
+import { useNavigate } from "react-router-dom"; // Hook for programmatic navigation
+import axiosInstance from "../../utils/axiosinstances"; // Axios instance for making HTTP requests
+import Toast from "../../components/TostMessage/Toast"; // Toast component for displaying messages
+import EmptyCard from "../../components/empty-cards/empty-cards"; // Component for displaying empty card message
+import AddnotesImg from "../../assets/images/Untitled design.png"; // Image for adding notes
+import Nonote from "../../assets/images/empty-notes-isolated-vector-17057936.jpg"; // Image for empty notes
 
 const Home = () => {
-    const [openAddEditModel, setOpenAddEditModel] = useState({
-        isShown: false,
-        type: "add",
-        data: null,
+    // State variables
+    const [openAddEditModel, setOpenAddEditModel] = useState({ // State for controlling the Add/Edit Note modal
+        isShown: false, // Boolean indicating whether the modal is open or closed
+        type: "add", // Type of operation (add or edit)
+        data: null, // Data of the note being edited (null for new note)
     });
-    const [showToastMesg, setShowToastMesg] = useState({
-        isShown: false,
-        type: "add",
-        message: "",
+    const [showToastMesg, setShowToastMesg] = useState({ // State for controlling the toast message
+        isShown: false, // Boolean indicating whether the toast message is visible
+        type: "add", // Type of message (add, update, delete, etc.)
+        message: "", // Content of the message
     });
-    const [allNotes, setAllNotes] = useState([]);
-    const [userInfo, setUserInfo] = useState(null);
-    const [isSearch,setIsSearch] = useState(false);
-    const navigate = useNavigate();
+    const [allNotes, setAllNotes] = useState([]); // State for storing all notes
+    const [userInfo, setUserInfo] = useState(null); // State for storing user information
+    const [isSearch, setIsSearch] = useState(false); // State for indicating if search is active
+    const navigate = useNavigate(); // Function for programmatic navigation
 
     const handleEdit = (noteDetails) => {
-        setOpenAddEditModel({ isShown: true, data: noteDetails, type: "edit" });
+        setOpenAddEditModel({ isShown: true, data: noteDetails, type: "edit" }); // Open the Add/Edit Note modal with edit mode
     };
 
+    // Function to display toast message
     const showToastMessage = (message, type) => {
-        setShowToastMesg({
-            isShown: true,
-            message,
-            type,
-        });
+        setShowToastMesg({ isShown: true, message, type }); // Show the toast message with specified content and type
     };
 
+    // Function to close the toast message
     const handleCloseToast = () => {
-        setShowToastMesg({
-            isShown: false,
-            message: "",
-        });
+        setShowToastMesg({ isShown: false, message: "" }); // Hide the toast message
     };
 
+    // Function to fetch user information
     const getUserInfo = async () => {
         try {
-            const response = await axiosInstance.get("/get-user");
+            const response = await axiosInstance.get("/get-user"); // Send GET request to retrieve user information
             if (response.data && response.data.user) {
-                setUserInfo(response.data.user);
+                setUserInfo(response.data.user); // Set user information in state
             }
         } catch (error) {
             if (error.response && error.response.status === 401) {
-                localStorage.clear();
-                navigate("/login");
+                localStorage.clear(); // Clear local storage
+                navigate("/login"); // Redirect to login page if unauthorized
             }
         }
     };
 
+    // Function to fetch all notes
     const getAllNotes = async () => {
         try {
-            const response = await axiosInstance.get("/get-all-notes");
+            const response = await axiosInstance.get("/get-all-notes"); // Send GET request to retrieve all notes
             if (response.data && response.data.notes) {
-                setAllNotes(response.data.notes);
+                setAllNotes(response.data.notes); // Set all notes in state
             }
         } catch (error) {
-            console.log("An unexpected error occurred. Please try again.");
+            console.log("An unexpected error occurred. Please try again."); // Log error if request fails
         }
     };
-    const deleteNote =async(data)=>{
-        const noteId = data._id
-        try{
-            const response = await axiosInstance.delete("/delete-notes/"+ noteId);
-            if(response.data && !response.data.error){
-                showToastMessage("Note Deleted successfully",'delete')
-                getAllNotes();
-               
-            }
-        }catch(error){
-            if(error.response && error.response.data && error.response.data.message){
-                console.log("An Unexpected error is occurred.Please try again.")
-            }
-        }
 
-    };
-    const onSearchNote = async (query)=>{
-        try{
-            const response = await axiosInstance.get('/search-notes',{
-                params:{query},
-            });
-            if(response.data && response.data.notes){
-                setIsSearch(true);
-                setAllNotes(response.data.notes);
+    // Function to delete a note
+    const deleteNote = async (data) => {
+        const noteId = data._id; // Extract note ID
+        try {
+            const response = await axiosInstance.delete("/delete-notes/" + noteId); // Send DELETE request to delete the note
+            if (response.data && !response.data.error) {
+                showToastMessage("Note Deleted successfully", "delete"); // Show success message if note is deleted
+                getAllNotes(); // Refresh notes after deletion
             }
-        }catch(error){
-            console.log(error);
+        } catch (error) {
+            console.log("An Unexpected error is occurred. Please try again."); // Log error if request fails
         }
-    }
-    const handleClearSearch=()=>{
-        setIsSearch(false);
-        getAllNotes();
-    }
-    const updateIsPinned = async(noteData)=>{
-        const noteId = noteData._id;
-        try{
-            const response =await axiosInstance.put('/Update-note-pinned/'+noteId,{
-                isPinned:!noteData.isPinned,
-            });
+    };
+
+    // Function to search for notes
+    const onSearchNote = async (query) => {
+        try {
+            const response = await axiosInstance.get('/search-notes', { params: { query } }); // Send GET request to search for notes
+            if (response.data && response.data.notes) {
+                setIsSearch(true); // Set search state to true
+                setAllNotes(response.data.notes); // Set search results in state
+            }
+        } catch (error) {
+            console.log(error); // Log error if request fails
+        }
+    };
+
+    // Function to clear search results
+    const handleClearSearch = () => {
+        setIsSearch(false); // Set search state to false
+        getAllNotes(); // Fetch all notes to reset the list
+    };
+
+    // Function to update the pinned status of a note
+    const updateIsPinned = async (noteData) => {
+        const noteId = noteData._id; // Extract note ID
+        try {
+            const response = await axiosInstance.put('/Update-note-pinned/' + noteId, { isPinned: !noteData.isPinned }); // Send PUT request to update pinned status
             if (response.data && response.data.note) {
-                showToastMessage("Note Updated Successfully", "update");
+                showToastMessage("Note Updated Successfully", "update"); // Show success message if note is updated
                 // Update the local state to reflect the pinned status change
                 setAllNotes((prevNotes) => {
                     const updatedNotes = prevNotes.map((note) =>
@@ -121,14 +119,15 @@ const Home = () => {
                     return updatedNotes;
                 });
             }
-        }catch(error){
-            console.log(error);
+        } catch (error) {
+            console.log(error); // Log error if request fails
         }
-    }
+    };
 
+    // useEffect hook to fetch user info and all notes on component mount
     useEffect(() => {
-        getAllNotes();
-        getUserInfo();
+        getUserInfo(); // Fetch user information
+        getAllNotes(); // Fetch all notes
     }, []);
 
     return (
